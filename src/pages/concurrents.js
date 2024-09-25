@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import cheerio from 'cheerio';
 import NavBar from '../components/Navbar';
 
 const Concurrents = () => {
@@ -8,34 +7,22 @@ const Concurrents = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Fonction pour récupérer et parser les données d'un site concurrent via l'API proxy
+        // Fonction pour récupérer les données scrappées via l'API proxy
         const fetchConcurrents = async () => {
             try {
                 // Appel à l'API proxy
                 const { data } = await axios.get('/api/proxy');
 
-                // Utilisation de Cheerio pour parser le HTML
-                const $ = cheerio.load(data);
-
-                // Extraction des données spécifiques (Exemple : tous les titres h2)
-                const concurrents = [];
-                $('h2').each((index, element) => {
-                    concurrents.push({
-                        title: $(element).text(),
-                        link: $(element).find('a').attr('href'),
-                    });
-                });
-
-                // Mise à jour de l'état avec les données scrappées
-                setConcurrentsData(concurrents);
+                // Mettre à jour l'état avec les données scrappées
+                setConcurrentsData(data);
                 setLoading(false);
             } catch (error) {
-                console.error('Erreur lors du scraping :', error);
+                console.error('Erreur lors de la récupération des concurrents :', error);
                 setLoading(false);
             }
         };
 
-        // Appel de la fonction de scraping au chargement de la page
+        // Appel de la fonction de récupération des concurrents au chargement de la page
         fetchConcurrents();
     }, []);
 
@@ -57,9 +44,11 @@ const Concurrents = () => {
                                     <h2 className="text-xl font-semibold">
                                         {concurrent.title}
                                     </h2>
-                                    <a href={concurrent.link} className="text-blue-500 underline">
-                                        Voir plus
-                                    </a>
+                                    {concurrent.link && (
+                                        <a href={concurrent.link} className="text-blue-500 underline">
+                                            Voir plus
+                                        </a>
+                                    )}
                                 </div>
                             ))
                         ) : (
@@ -73,3 +62,4 @@ const Concurrents = () => {
 };
 
 export default Concurrents;
+

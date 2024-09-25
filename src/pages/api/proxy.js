@@ -1,36 +1,51 @@
-// pages/api/proxy.js
 import axios from 'axios';
+import * as cheerio from 'cheerio';
 
 export default async function handler(req, res) {
     try {
-        // Remplacez l'URL par l'URL que vous voulez atteindre
-        const url = 'https://www.nuxeo.com/'; 
-        
-        // // Effectuer la requête à l'URL cible
-        // const response = await axios({
-        // method: req.method,
-        // url,
-        // headers: {
-        //     'Content-Type': 'application/json',
-        //     ...req.headers, // Reprendre les en-têtes de la requête d'origine
-        // },
-        // data: req.method === 'POST' ? req.body : null, // Passer les données si c'est une requête POST
-        // });
+        // URL du site à scraper
+        const url = 'https://www.hyland.com/fr/solutions/products/nuxeo-platform';
 
-        // Configuration d'Axios pour ignorer les certificats SSL (A SUPPRIMER EN PRODUCTION)
+        // Requête GET pour récupérer la page HTML
         const response = await axios.get(url, {
             httpsAgent: new (require('https').Agent)({
-                rejectUnauthorized: false, // Ignorer les erreurs de certificat
+                rejectUnauthorized: false, // Ignorer les erreurs SSL, à supprimer en production
             }),
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            }
         });
 
-        // Renvoyer la réponse au client
-        res.status(response.status).json(response.data);
+        // Charger le HTML récupéré avec Cheerio
+        const html = response.data;
+         // Vérifie si la réponse contient bien du HTML
+            if (typeof html !== 'string') {
+                throw new Error('La réponse ne contient pas du HTML valide.');
+            }
+
+        // Charger le HTML avec Cheerio
+        const $ = cheerio.load(html); // Ici on utilise Cheerio pour parser le HTML
+
+        // Extraire les balises h2 et leurs liens associés
+        const concurrents = [];
+        $('h2').each((index, element) => {
+            concurrents.push({
+                title: $(element).text(),
+                link: $(element).find('a').attr('href') || '', // Gérer le cas où il n'y a pas de lien
+            });
+        });
+
+        // Renvoyer les données sous forme de JSON
+        res.status(200).json(concurrents);
     } catch (error) {
-        console.error('Erreur lors de la récupération des données :', error);
-        // En cas d'erreur, renvoyer une réponse d'erreur
+        console.error('Erreur lors du scraping :', error.toJSON ? error.toJSON() : error);
+
+        // En cas d'erreur, renvoyer une réponse appropriée
         res.status(error.response ? error.response.status : 500).json({
-        message: error.message,
+            message: 'Erreur lors du scraping des données',
+            details: error.message,
+            config: error.config,
+            response: error.response ? error.response.data : null,
         });
     }
 }
