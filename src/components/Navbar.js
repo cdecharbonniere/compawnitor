@@ -26,10 +26,10 @@ const Navbar = () => {
                 </Link>
 
                 <Link 
-                    href="/dashboard"
+                    href="/social"
                     className="text-gray-300 hover:text-white"
                 >
-                    Dashboard
+                    Social
                 </Link>
                 </div>
             </div>
