@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import clientPromise from '../../utils/mongodb';
 
 export default async function handler(req, res) {
     try {
@@ -34,6 +35,14 @@ export default async function handler(req, res) {
                 link: $(element).find('a').attr('href') || '', // Gérer le cas où il n'y a pas de lien
             });
         });
+
+          // Connexion à MongoDB
+        const client = await clientPromise;
+        const db = client.db('compawnitor'); // Nom de la base de données
+        const collection = db.collection('concurrents'); // Nom de la collection
+
+          // Insérer les données scrappées dans MongoDB
+        await collection.insertMany(concurrents);
 
         // Renvoyer les données sous forme de JSON
         res.status(200).json(concurrents);

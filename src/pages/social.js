@@ -1,21 +1,30 @@
 import Twitter from 'twitter';
 
 export async function getStaticProps() {
-  const client = new Twitter({
-    consumer_key: 'your_consumer_key',
-    consumer_secret: 'your_consumer_secret',
-    access_token_key: 'your_access_token_key',
-    access_token_secret: 'your_access_token_secret',
-  });
+  try {
+    const client = new Twitter({
+      consumer_key: process.env.TWITTER_CONSUMER_KEY,
+      consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+      access_token_key: process.env.TWITTER_ACCESS_TOKEN,
+      access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+    });
 
-  const params = { q: 'concurrent1', count: 10 };
-  const tweets = await client.get('search/tweets', params);
+    const params = { q: 'concurrent1', count: 10 };
+    const tweets = await client.get('search/tweets', params);
 
-  return {
-    props: {
-      tweets: tweets.statuses,
-    },
-  };
+    return {
+      props: {
+        tweets: tweets.statuses,
+      },
+    };
+  } catch (error) {
+    console.error('Erreur lors de la récupération des tweets:', error);
+    return {
+      props: {
+        tweets: [], // Retourne un tableau vide en cas d'erreur
+      },
+    };
+  }
 }
 
 export default function Social({ tweets }) {

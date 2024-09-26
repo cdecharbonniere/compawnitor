@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import NavBar from '../components/Navbar';
 
 const Concurrents = () => {
@@ -11,7 +10,8 @@ const Concurrents = () => {
         const fetchConcurrents = async () => {
             try {
                 // Appel à l'API proxy
-                const { data } = await axios.get('/api/proxy');
+                const res = await fetch('/api/scraping');
+                const data = await res.json();
 
                 // Mettre à jour l'état avec les données scrappées
                 setConcurrentsData(data);
