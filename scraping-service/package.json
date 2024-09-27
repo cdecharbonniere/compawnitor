@@ -1,0 +1,18 @@
+{
+  "name": "scraping-service",
+  "version": "1.0.0",
+  "description": "back-end scraping microservice",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Clémence de Charbonnière",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "express": "^4.21.0",
+    "nodemailer": "^6.9.15",
+    "puppeteer": "^23.4.1"
+  }
+}
