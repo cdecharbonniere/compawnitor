@@ -1,34 +1,42 @@
 import { useEffect, useState } from 'react';
-import { getStaticProps as fetchTweetsFromAPI } from './api/twitter-scraping'; // Mettez à jour le chemin d'importation
 import NavBar from '../components/Navbar';
 
-const Tweets = ({ initialTweets }) => {
-    const [tweets, setTweets] = useState(initialTweets); // Initialiser l'état avec les tweets passés en props
+const Tweets = () => {
+    const [tweets, setTweets] = useState([]); // Initialiser l'état pour les tweets
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null); // Pour capturer les erreurs
 
     useEffect(() => {
         const fetchTweets = async () => {
             try {
-                // Appel à l'API proxy
-                const res = await fetch('/api/scraping');
+                // Appel à l'API proxy de scraping
+                const res = await fetch('/api/twitter-scraping'); // Appel à l'API
                 const data = await res.json();
 
-                // Mettre à jour l'état avec les données scrappées
-                setTweets(data || []); // Mettre à jour l'état avec les nouveaux tweets scrappés
-                setLoading(false);
+                if (res.ok) {
+                    // Si l'appel est réussi, mettre à jour l'état avec les tweets
+                    setTweets(data.tweets);
+                } else {
+                    // Gestion des erreurs
+                    setError(data.error || 'Erreur lors du chargement des tweets.');
+                }
             } catch (error) {
                 console.error("Erreur lors de la récupération des tweets :", error);
-                setLoading(false);
+                setError("Erreur lors de la récupération des tweets.");
+            } finally {
+                setLoading(false); // Arrêter le chargement
             }
         };
 
-        fetchTweets();
-    }, []);
+        fetchTweets(); // Exécuter la fonction au chargement du composant
+    }, []); // Utiliser un tableau vide pour appeler l'effet une seule fois
 
     return (
         <div>
             {loading ? (
                 <p>Chargement des données...</p>
+            ) : error ? (
+                <p>{error}</p> // Afficher l'erreur si elle existe
             ) : (
                 <ul>
                     {tweets.length > 0 ? (
@@ -46,7 +54,7 @@ const Tweets = ({ initialTweets }) => {
     );
 };
 
-export default function Social({ tweets }) {
+export default function Social() {
     return (
         <>
             <NavBar />
@@ -54,16 +62,8 @@ export default function Social({ tweets }) {
                 <h1 className="text-4xl font-bold text-center mb-8">
                     Dernières mentions sur Twitter
                 </h1>
-                <Tweets initialTweets={tweets} /> {/* Passer les tweets initialement récupérés */}
+                <Tweets /> {/* Afficher le composant des tweets */}
             </div>
         </>
     );
-}
-
-// Appeler getStaticProps pour récupérer les données à la compilation
-export async function getStaticProps() {
-    const props = await fetchTweetsFromAPI(); // Utiliser la fonction importée
-    return {
-        props,
-    };
 }
